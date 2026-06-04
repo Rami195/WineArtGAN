@@ -50,7 +50,7 @@ WineArtGAN/
 │   └── test.csv
 │
 ├── dev/
-│   └── 01_dataset_preparation.ipynb
+│   └── dev_01_dataset_preparation.ipynb
 │
 ├── prod/
 │   └── .gitkeep
@@ -84,7 +84,7 @@ Contiene los notebooks de desarrollo experimental.
 
 Actualmente incluye:
 
-- `01_dataset_preparation.ipynb`: notebook de preparación del dataset, particionado, preprocesamiento, data augmentation y verificación de DataLoaders.
+- `dev_01_dataset_preparation.ipynb`: notebook de preparación del dataset, particionado, preprocesamiento, data augmentation y verificación de DataLoaders.
 
 Más adelante se agregarán notebooks de entrenamiento y evaluación del modelo.
 
@@ -207,16 +207,34 @@ git clone https://github.com/Rami195/WineArtGAN.git
 cd WineArtGAN
 ```
 
-2. Instalar dependencias necesarias:
+2. Crear el entorno virtual:
 
 ```bash
-pip install kagglehub torch torchvision matplotlib scikit-learn pandas pillow
+python -m venv .venv
 ```
 
-3. Ejecutar el notebook:
+3. Activar el entorno virtual:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+4. Actualizar pip:
+
+```bash
+python -m pip install --upgrade pip
+```
+
+5. Instalar dependencias:
+
+```bash
+python -m pip install kagglehub torch torchvision matplotlib scikit-learn pandas pillow jupyterlab nbconvert ipykernel
+```
+
+6. Ejecutar el notebook:
 
 ```text
-dev/01_dataset_preparation.ipynb
+dev/dev_01_dataset_preparation.ipynb
 ```
 
 El notebook descarga automáticamente el dataset desde Kaggle y prepara los archivos necesarios.
