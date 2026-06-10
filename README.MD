@@ -45,9 +45,8 @@ WineArtGAN/
 │
 ├── data/
 │   ├── README.md
-│   ├── train.csv
-│   ├── val.csv
-│   └── test.csv
+│   └── raw/
+│       └── abstract-art-gallery/  <-- Descargado localmente
 │
 ├── dev/
 │   └── dev_01_dataset_preparation.ipynb
@@ -70,9 +69,7 @@ Contiene información relacionada con el dataset.
 Incluye:
 
 - `README.md`: descripción del dataset y forma de descarga.
-- `train.csv`: rutas relativas de las imágenes usadas para entrenamiento.
-- `val.csv`: rutas relativas de las imágenes usadas para validación.
-- `test.csv`: rutas relativas de las imágenes usadas para test.
+- `raw/`: carpeta donde se descargan y almacenan las imágenes originales.
 
 Las imágenes originales no se versionan en GitHub para evitar subir archivos pesados.
 
@@ -84,7 +81,7 @@ Contiene los notebooks de desarrollo experimental.
 
 Actualmente incluye:
 
-- `dev_01_dataset_preparation.ipynb`: notebook de preparación del dataset, particionado, preprocesamiento, data augmentation y verificación de DataLoaders.
+- `dev_01_dataset_preparation.ipynb`: notebook de preparación del dataset, carga de imágenes y verificación de DataLoaders.
 
 Más adelante se agregarán notebooks de entrenamiento y evaluación del modelo.
 
@@ -116,25 +113,20 @@ En el notebook se realiza el siguiente flujo:
 3. Inspección de carpetas y archivos.
 4. Carga de imágenes `.jpg`.
 5. Implementación de una clase personalizada de PyTorch heredando de `torch.utils.data.Dataset`.
-6. Particionado en train, validación y test.
-7. Creación de DataLoaders.
-8. Aplicación de preprocesamiento y data augmentation.
+6. Configuración de un único conjunto para entrenamiento (sin particionado).
+7. Creación de DataLoader con mezcla de datos (`shuffle=True`).
+8. Aplicación de preprocesamiento (redimensionado a 128x128 y conversión a tensor).
 9. Verificación final de batches procesados.
 
 ---
 
 ## Particionado del dataset
 
-El dataset se divide en tres conjuntos:
+A diferencia de los problemas de clasificación supervisada, en este proyecto **no dividiremos el dataset en conjuntos de entrenamiento, validación y test**. Se utiliza el **100% de las imágenes disponibles para el entrenamiento** del modelo generativo. 
 
-| Conjunto | Porcentaje aproximado | Uso |
-|---|---:|---|
-| Train | 90% | Entrenamiento del modelo generativo |
-| Validación | 5% | Seguimiento y comparación durante el desarrollo |
-| Test | 5% | Evaluación final de resultados |
+Esto se debe a que en tareas generativas no se realiza una evaluación cuantitativa directa sobre datos no vistos durante el entrenamiento (como el cálculo de precisión/accuracy), y es prioritario maximizar la cantidad de datos para que el modelo aprenda la distribución visual del arte abstracto.
 
-Se utiliza una semilla fija para garantizar la reproducibilidad del particionado.
-
+Para garantizar la reproducibilidad del entrenamiento y de los resultados generados, se definió una semilla global:
 ```python
 SEED = 42
 ```
@@ -148,27 +140,14 @@ Las imágenes son preprocesadas antes de ingresar al modelo.
 Los pasos principales son:
 
 - Conversión a RGB.
-- Redimensionado a `64x64` píxeles.
-- Conversión a tensor.
-- Normalización al rango `[-1, 1]`.
-
-La normalización se realiza con media y desvío de `0.5` en cada canal RGB, lo cual es habitual en modelos generativos como DCGAN.
+- Redimensionado a `128x128` píxeles para conservar una mayor nitidez y calidad visual en las etiquetas generadas.
+- Conversión a tensor (rango `[0, 1]`). No se aplica normalización adicional al rango `[-1, 1]` para mantener un procesamiento directo de los píxeles.
 
 ---
 
 ## Data augmentation
 
-Las augmentations se aplican únicamente al conjunto de entrenamiento.
-
-Se utilizan transformaciones suaves, adecuadas para imágenes de arte abstracto:
-
-- Inversión horizontal aleatoria.
-- Rotación leve.
-- Variaciones suaves de brillo, contraste y saturación.
-
-Estas transformaciones aumentan la variabilidad del dataset sin modificar la naturaleza visual de las obras.
-
-En validación y test no se aplican transformaciones aleatorias, para mantener una evaluación consistente.
+**No se aplica aumento de datos (data augmentation)** en este pipeline. Se prescinde de transformaciones como rotaciones aleatorias porque introducen bordes o esquinas negras en los tensores de las imágenes, lo cual haría que el generador aprenda a producir manchas negras falsas en el arte abstracto generado. Asimismo, contamos con una cantidad de datos suficiente para el entrenamiento sin necesidad de generar variantes artificiales.
 
 ---
 
